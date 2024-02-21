@@ -740,7 +740,7 @@ proc rijndaelKeySetupEnc(rk: var array[60, uint32], cipherKey: openArray[uint8],
       i.inc
       if i == 8:
         return 12
-      rk[rkIndex + 10] = rk[rkIndex + 4] xor rk[rkIndex + 9]
+      rk[rkIndex + 10] = rk[rkIndex + 4] xor rk[rkIndex +  9]
       rk[rkIndex + 11] = rk[rkIndex + 5] xor rk[rkIndex + 10]
       rkIndex.inc(6)
 
@@ -763,7 +763,7 @@ proc rijndaelKeySetupEnc(rk: var array[60, uint32], cipherKey: openArray[uint8],
         return 14
       temp = rk[rkIndex + 11]
       rk[rkIndex + 12] = rk[rkIndex + 4] xor
-        (Te4[(temp shr 24)                ] and 0xff000000'u32) xor
+        (Te4[(temp shr 24)             ] and 0xff000000'u32) xor
         (Te4[(temp shr 16) and 0xff'u32] and 0x00ff0000'u32) xor
         (Te4[(temp shr  8) and 0xff'u32] and 0x0000ff00'u32) xor
         (Te4[ temp         and 0xff'u32] and 0x000000ff'u32)
@@ -843,10 +843,10 @@ proc rijndaelEncrypt(rk: openArray[uint32], Nr: int, pt: openArray[uint8], ct: v
   var t0, t1, t2, t3: uint32
   
   # NOTE: plain text block to cipher state and add initial round key
-  s0 = loadU32Big(pt[0..3])   xor rk[0]
-  s1 = loadU32Big(pt[4..7])   xor rk[1]
-  s2 = loadU32Big(pt[8..11])  xor rk[2]
-  s3 = loadU32Big(pt[12..15]) xor rk[3]
+  s0 = loadU32Big(pt[ 0 ..  3]) xor rk[0]
+  s1 = loadU32Big(pt[ 4 ..  7]) xor rk[1]
+  s2 = loadU32Big(pt[ 8 .. 11]) xor rk[2]
+  s3 = loadU32Big(pt[12 .. 15]) xor rk[3]
   
   # round 1:
   t0 = Te0[s0 shr 24] xor Te1[(s1 shr 16) and 0xff'u32] xor Te2[(s2 shr 8) and 0xff'u32] xor Te3[s3 and 0xff'u32] xor rk[ 4]
@@ -966,10 +966,10 @@ proc rijndaelDecrypt(rk: openArray[uint32], Nr: int, ct: openArray[uint8], pt: v
   var t0, t1, t2, t3: uint32
 
   # NOTE: map cipher text block to cipher state and add initial round key
-  s0 = loadU32Big(ct[0..3])   xor rk[0]
-  s1 = loadU32Big(ct[4..7])   xor rk[1]
-  s2 = loadU32Big(ct[8..11])  xor rk[2]
-  s3 = loadU32Big(ct[12..15]) xor rk[3]
+  s0 = loadU32Big(ct[ 0 ..  3]) xor rk[0]
+  s1 = loadU32Big(ct[ 4 ..  7]) xor rk[1]
+  s2 = loadU32Big(ct[ 8 .. 11]) xor rk[2]
+  s3 = loadU32Big(ct[12 .. 15]) xor rk[3]
   
   # round 1:
   t0 = Td0[s0 shr 24] xor Td1[(s3 shr 16) and 0xff'u32] xor Td2[(s2 shr 8) and 0xff'u32] xor Td3[s1 and 0xff'u32] xor rk[ 4]
