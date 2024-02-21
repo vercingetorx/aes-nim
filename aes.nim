@@ -104,7 +104,7 @@ proc incrementCounter(ctx: var aesCtrCtx) =
     ctx.counter[i] = ctx.counter[i] + 1
     if ctx.counter[i] != 0:  # No overflow for this byte
       return
-  raise newException(OverflowError, "counter overflow")
+  raise newException(OverflowDefect, "counter overflow")
 
 
 proc intToBytesBE(n: uint64): seq[byte] =
