@@ -515,7 +515,7 @@ proc newAesCbcCtx*(key, iv: string): aesCbcCtx =
   return newAesCbcCtx(key.encodeBytes(), iv.encodeBytes())
 
 
-proc newAesCtrCtx*(key, nonce: openArray[byte], initState: openArray[byte] = @[]): aesCtrctx =
+proc newAesCtrCtx*(key, nonce: openArray[byte], initState: openArray[byte]=newSeq[byte](8)): aesCtrctx =
   if not key.len in {16, 24, 32}:
     raise newException(ValueError, "Key must be 16/24/32 bytes long")
   if nonce.len != 8:
