@@ -682,7 +682,7 @@ proc loadU32Big(data: openArray[uint8]): uint32 =
   # NOTE: data needs to be >= 4 bytes
   return (uint32(data[0]) shl 24) or
          (uint32(data[1]) shl 16) or
-         (uint32(data[2]) shl 8)  or
+         (uint32(data[2]) shl  8) or
           uint32(data[3])
 
 
@@ -711,9 +711,9 @@ proc rijndaelKeySetupEnc(rk: var array[60, uint32], cipherKey: openArray[uint8],
       temp = rk[rkIndex + 3]
       rk[rkIndex + 4] = rk[rkIndex + 0] xor
           (Te4[(temp shr 16)  and 0xff'u32] and 0xff000000'u32) xor
-          (Te4[(temp shr 8 )  and 0xff'u32] and 0x00ff0000'u32) xor
+          (Te4[(temp shr  8)  and 0xff'u32] and 0x00ff0000'u32) xor
           (Te4[ temp          and 0xff'u32] and 0x0000ff00'u32) xor
-          (Te4[(temp shr 24)                 ] and 0x000000ff'u32) xor
+          (Te4[(temp shr 24)              ] and 0x000000ff'u32) xor
           rcon[i]
       rk[rkIndex + 5] = rk[rkIndex + 1] xor rk[rkIndex + 4]
       rk[rkIndex + 6] = rk[rkIndex + 2] xor rk[rkIndex + 5]
@@ -730,9 +730,9 @@ proc rijndaelKeySetupEnc(rk: var array[60, uint32], cipherKey: openArray[uint8],
       temp = rk[rkIndex + 5]
       rk[rkIndex + 6] = rk[rkIndex + 0] xor
           (Te4[(temp shr 16) and 0xff'u32] and 0xff000000'u32) xor
-          (Te4[(temp shr 8 ) and 0xff'u32] and 0x00ff0000'u32) xor
+          (Te4[(temp shr  8) and 0xff'u32] and 0x00ff0000'u32) xor
           (Te4[ temp         and 0xff'u32] and 0x0000ff00'u32) xor
-          (Te4[(temp shr 24)                ] and 0x000000ff'u32) xor
+          (Te4[(temp shr 24)             ] and 0x000000ff'u32) xor
           rcon[i]
       rk[rkIndex + 7] = rk[rkIndex + 1] xor rk[rkIndex + 6]
       rk[rkIndex + 8] = rk[rkIndex + 2] xor rk[rkIndex + 7]
@@ -751,12 +751,12 @@ proc rijndaelKeySetupEnc(rk: var array[60, uint32], cipherKey: openArray[uint8],
       temp = rk[rkIndex + 7]
       rk[rkIndex + 8] = rk[rkIndex + 0] xor
         (Te4[(temp shr 16) and 0xff'u32] and 0xff000000'u32) xor
-        (Te4[(temp shr 8 ) and 0xff'u32] and 0x00ff0000'u32) xor
+        (Te4[(temp shr  8) and 0xff'u32] and 0x00ff0000'u32) xor
         (Te4[ temp         and 0xff'u32] and 0x0000ff00'u32) xor
-        (Te4[(temp shr 24)                ] and 0x000000ff'u32) xor
+        (Te4[(temp shr 24)             ] and 0x000000ff'u32) xor
         rcon[i]
-      rk[rkIndex + 9]  = rk[rkIndex + 1] xor rk[rkIndex + 8 ]
-      rk[rkIndex + 10] = rk[rkIndex + 2] xor rk[rkIndex + 9 ]
+      rk[rkIndex +  9] = rk[rkIndex + 1] xor rk[rkIndex +  8]
+      rk[rkIndex + 10] = rk[rkIndex + 2] xor rk[rkIndex +  9]
       rk[rkIndex + 11] = rk[rkIndex + 3] xor rk[rkIndex + 10]
       i.inc
       if i == 7:
@@ -765,7 +765,7 @@ proc rijndaelKeySetupEnc(rk: var array[60, uint32], cipherKey: openArray[uint8],
       rk[rkIndex + 12] = rk[rkIndex + 4] xor
         (Te4[(temp shr 24)                ] and 0xff000000'u32) xor
         (Te4[(temp shr 16) and 0xff'u32] and 0x00ff0000'u32) xor
-        (Te4[(temp shr 8 ) and 0xff'u32] and 0x0000ff00'u32) xor
+        (Te4[(temp shr  8) and 0xff'u32] and 0x0000ff00'u32) xor
         (Te4[ temp         and 0xff'u32] and 0x000000ff'u32)
       rk[rkIndex + 13] = rk[rkIndex + 5] xor rk[rkIndex + 12]
       rk[rkIndex + 14] = rk[rkIndex + 6] xor rk[rkIndex + 13]
@@ -814,25 +814,25 @@ proc rijndaelKeySetupDec(rk: var array[60, uint32], cipherKey: openArray[uint8],
     rk[startIdx] =
       Td0[Te4[(rk[startIdx] shr 24) and 0xff'u32] and 0xff'u32] xor
       Td1[Te4[(rk[startIdx] shr 16) and 0xff'u32] and 0xff'u32] xor
-      Td2[Te4[(rk[startIdx] shr 8 ) and 0xff'u32] and 0xff'u32] xor
+      Td2[Te4[(rk[startIdx] shr  8) and 0xff'u32] and 0xff'u32] xor
       Td3[Te4[ rk[startIdx]         and 0xff'u32] and 0xff'u32]
 
     rk[startIdx + 1] =
       Td0[Te4[(rk[startIdx + 1] shr 24) and 0xff'u32] and 0xff'u32] xor
       Td1[Te4[(rk[startIdx + 1] shr 16) and 0xff'u32] and 0xff'u32] xor
-      Td2[Te4[(rk[startIdx + 1] shr 8 ) and 0xff'u32] and 0xff'u32] xor
+      Td2[Te4[(rk[startIdx + 1] shr  8) and 0xff'u32] and 0xff'u32] xor
       Td3[Te4[ rk[startIdx + 1]         and 0xff'u32] and 0xff'u32]
 
     rk[startIdx + 2] =
       Td0[Te4[(rk[startIdx + 2] shr 24) and 0xff'u32] and 0xff'u32] xor
       Td1[Te4[(rk[startIdx + 2] shr 16) and 0xff'u32] and 0xff'u32] xor
-      Td2[Te4[(rk[startIdx + 2] shr 8 ) and 0xff'u32] and 0xff'u32] xor
+      Td2[Te4[(rk[startIdx + 2] shr  8) and 0xff'u32] and 0xff'u32] xor
       Td3[Te4[ rk[startIdx + 2]         and 0xff'u32] and 0xff'u32]
 
     rk[startIdx + 3] =
       Td0[Te4[(rk[startIdx + 3] shr 24) and 0xff'u32] and 0xff'u32] xor
       Td1[Te4[(rk[startIdx + 3] shr 16) and 0xff'u32] and 0xff'u32] xor
-      Td2[Te4[(rk[startIdx + 3] shr 8 ) and 0xff'u32] and 0xff'u32] xor
+      Td2[Te4[(rk[startIdx + 3] shr  8) and 0xff'u32] and 0xff'u32] xor
       Td3[Te4[ rk[startIdx + 3]         and 0xff'u32] and 0xff'u32]
 
   return Nr
@@ -920,44 +920,44 @@ proc rijndaelEncrypt(rk: openArray[uint32], Nr: int, pt: openArray[uint8], ct: v
   let rkOffset = Nr shl 2
 
   # NOTE: apply last round and map cipher state to cipher text block
-  s0 = (Te4[ t0 shr 24                 ] and 0xff000000'u32) xor
+  s0 = (Te4[ t0 shr 24              ] and 0xff000000'u32) xor
        (Te4[(t1 shr 16) and 0xff'u32] and 0x00ff0000'u32) xor
-       (Te4[(t2 shr 8 ) and 0xff'u32] and 0x0000ff00'u32) xor
+       (Te4[(t2 shr  8) and 0xff'u32] and 0x0000ff00'u32) xor
        (Te4[ t3         and 0xff'u32] and 0x000000ff'u32) xor
        rk[rkOffset]
   ct[0] = uint8(s0 shr 24         )
   ct[1] = uint8(s0 shr 16 and 0xFF)
-  ct[2] = uint8(s0 shr 8  and 0xFF)
+  ct[2] = uint8(s0 shr  8 and 0xFF)
   ct[3] = uint8(s0        and 0xFF)
 
-  s1 = (Te4[ t1 shr 24                 ] and 0xff000000'u32) xor
+  s1 = (Te4[ t1 shr 24              ] and 0xff000000'u32) xor
        (Te4[(t2 shr 16) and 0xff'u32] and 0x00ff0000'u32) xor
-       (Te4[(t3 shr 8 ) and 0xff'u32] and 0x0000ff00'u32) xor
+       (Te4[(t3 shr  8) and 0xff'u32] and 0x0000ff00'u32) xor
        (Te4[ t0         and 0xff'u32] and 0x000000ff'u32) xor
        rk[rkOffset + 1]
   ct[4] = uint8(s1 shr 24         )
   ct[5] = uint8(s1 shr 16 and 0xFF)
-  ct[6] = uint8(s1 shr 8  and 0xFF)
+  ct[6] = uint8(s1 shr  8 and 0xFF)
   ct[7] = uint8(s1        and 0xFF)
 
-  s2 = (Te4[ t2 shr 24                 ] and 0xff000000'u32) xor
+  s2 = (Te4[ t2 shr 24              ] and 0xff000000'u32) xor
        (Te4[(t3 shr 16) and 0xff'u32] and 0x00ff0000'u32) xor
-       (Te4[(t0 shr 8 ) and 0xff'u32] and 0x0000ff00'u32) xor
+       (Te4[(t0 shr  8) and 0xff'u32] and 0x0000ff00'u32) xor
        (Te4[ t1         and 0xff'u32] and 0x000000ff'u32) xor
        rk[rkOffset + 2]
   ct[8]  = uint8(s2 shr 24         )
   ct[9]  = uint8(s2 shr 16 and 0xFF)
-  ct[10] = uint8(s2 shr 8  and 0xFF)
+  ct[10] = uint8(s2 shr  8 and 0xFF)
   ct[11] = uint8(s2        and 0xFF)
 
-  s3 = (Te4[ t3 shr 24                 ] and 0xff000000'u32) xor
+  s3 = (Te4[ t3 shr 24              ] and 0xff000000'u32) xor
        (Te4[(t0 shr 16) and 0xff'u32] and 0x00ff0000'u32) xor
-       (Te4[(t1 shr 8 ) and 0xff'u32] and 0x0000ff00'u32) xor
+       (Te4[(t1 shr  8) and 0xff'u32] and 0x0000ff00'u32) xor
        (Te4[ t2         and 0xff'u32] and 0x000000ff'u32) xor
        rk[rkOffset + 3]
   ct[12] = uint8(s3 shr 24         )
   ct[13] = uint8(s3 shr 16 and 0xFF)
-  ct[14] = uint8(s3 shr 8  and 0xFF)
+  ct[14] = uint8(s3 shr  8 and 0xFF)
   ct[15] = uint8(s3        and 0xFF)
 
 
@@ -1043,43 +1043,43 @@ proc rijndaelDecrypt(rk: openArray[uint32], Nr: int, ct: openArray[uint8], pt: v
   let rkOffset = Nr shl 2
   
   # NOTE: apply the final round and map cipher state to plain text block
-  s0 = (Td4[ t0 shr 24                 ] and 0xff000000'u32) xor
+  s0 = (Td4[ t0 shr 24              ] and 0xff000000'u32) xor
        (Td4[(t3 shr 16) and 0xff'u32] and 0x00ff0000'u32) xor
-       (Td4[(t2 shr 8 ) and 0xff'u32] and 0x0000ff00'u32) xor
+       (Td4[(t2 shr  8) and 0xff'u32] and 0x0000ff00'u32) xor
        (Td4[ t1         and 0xff'u32] and 0x000000ff'u32) xor
        rk[rkOffset]
   pt[0] = uint8(s0 shr 24         )
   pt[1] = uint8(s0 shr 16 and 0xFF)
-  pt[2] = uint8(s0 shr 8  and 0xFF)
+  pt[2] = uint8(s0 shr  8 and 0xFF)
   pt[3] = uint8(s0        and 0xFF)
 
-  s1 = (Td4[ t1 shr 24                 ] and 0xff000000'u32) xor
+  s1 = (Td4[ t1 shr 24              ] and 0xff000000'u32) xor
        (Td4[(t0 shr 16) and 0xff'u32] and 0x00ff0000'u32) xor
-       (Td4[(t3 shr 8 ) and 0xff'u32] and 0x0000ff00'u32) xor
+       (Td4[(t3 shr  8) and 0xff'u32] and 0x0000ff00'u32) xor
        (Td4[ t2         and 0xff'u32] and 0x000000ff'u32) xor
        rk[rkOffset + 1]
   pt[4] = uint8(s1 shr 24         )
   pt[5] = uint8(s1 shr 16 and 0xFF)
-  pt[6] = uint8(s1 shr 8  and 0xFF)
+  pt[6] = uint8(s1 shr  8 and 0xFF)
   pt[7] = uint8(s1        and 0xFF)
 
-  s2 = (Td4[ t2 shr 24                 ] and 0xff000000'u32) xor
+  s2 = (Td4[ t2 shr 24              ] and 0xff000000'u32) xor
        (Td4[(t1 shr 16) and 0xff'u32] and 0x00ff0000'u32) xor
-       (Td4[(t0 shr 8 ) and 0xff'u32] and 0x0000ff00'u32) xor
+       (Td4[(t0 shr  8) and 0xff'u32] and 0x0000ff00'u32) xor
        (Td4[ t3         and 0xff'u32] and 0x000000ff'u32) xor
        rk[rkOffset + 2]
   pt[8]  = uint8(s2 shr 24         )
   pt[9]  = uint8(s2 shr 16 and 0xFF)
-  pt[10] = uint8(s2 shr 8  and 0xFF)
+  pt[10] = uint8(s2 shr  8 and 0xFF)
   pt[11] = uint8(s2        and 0xFF)
-  s3 = (Td4[ t3 shr 24                 ] and 0xff000000'u32) xor
+  s3 = (Td4[ t3 shr 24              ] and 0xff000000'u32) xor
        (Td4[(t2 shr 16) and 0xff'u32] and 0x00ff0000'u32) xor
-       (Td4[(t1 shr 8 ) and 0xff'u32] and 0x0000ff00'u32) xor
+       (Td4[(t1 shr  8) and 0xff'u32] and 0x0000ff00'u32) xor
        (Td4[ t0         and 0xff'u32] and 0x000000ff'u32) xor
        rk[rkOffset + 3]
   pt[12] = uint8(s3 shr 24         )
   pt[13] = uint8(s3 shr 16 and 0xFF)
-  pt[14] = uint8(s3 shr 8  and 0xFF)
+  pt[14] = uint8(s3 shr  8 and 0xFF)
   pt[15] = uint8(s3        and 0xFF)
 
 
