@@ -10,14 +10,14 @@ import std/[sequtils, strutils]
 const blocksize = 16
 
 type
-  aesEcbCtx = object # Electronic CodeBook
+  aesEcbCtx* = object # Electronic CodeBook
     key:            seq[byte]
-  aesCbcCtx = object # Ciphertext Block Chaining
+  aesCbcCtx* = object # Ciphertext Block Chaining
     key:            seq[byte]
     iv:             seq[byte]
     previousBlock:  array[blocksize, byte]
     isEncryptState: bool
-  aesCtrCtx = object # Counter
+  aesCtrCtx* = object # Counter
     key:            seq[byte]
     nonce:          seq[byte]
     initState:      array[8, byte]
