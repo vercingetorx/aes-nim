@@ -1,7 +1,7 @@
 import std/[sequtils, strutils]
 
 #[
-  key sizes (int -> bytes):
+  key sizes (int bytes -> bits):
     16 -> 128bit
     24 -> 192bit
     32 -> 256bit
