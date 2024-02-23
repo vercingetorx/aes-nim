@@ -5,10 +5,10 @@ const
   ERR_NR_ROUNDS = -1
 
 type
-  BlockState = object
-    ek: array[4 * (MAXNR + 1), uint32]  # encryption key schedule
-    dk: array[4 * (MAXNR + 1), uint32]  # decryption key schedule
-    rounds: int
+  BlockState* = object
+    ek*: array[4 * (MAXNR + 1), uint32]  # encryption key schedule
+    dk*: array[4 * (MAXNR + 1), uint32]  # decryption key schedule
+    rounds*: int
 
 const Te0: array[256, uint32] = [
   0xc66363a5'u32, 0xf87c7c84'u32, 0xee777799'u32, 0xf67b7b8d'u32,
@@ -706,6 +706,7 @@ proc rijndaelKeySetupEnc(rk: var array[60, uint32], cipherKey: openArray[uint8],
   rk[1] = loadU32Big(cipherKey[4  .. 7 ])
   rk[2] = loadU32Big(cipherKey[8  .. 11])
   rk[3] = loadU32Big(cipherKey[12 .. 15])
+  
   if keyBits == 128:
     while true:
       temp = rk[rkIndex + 3]
@@ -725,6 +726,7 @@ proc rijndaelKeySetupEnc(rk: var array[60, uint32], cipherKey: openArray[uint8],
 
   rk[rkIndex + 4] = loadU32Big(cipherKey[16 .. 19])
   rk[rkIndex + 5] = loadU32Big(cipherKey[20 .. 23])
+  
   if keyBits == 192:
     while true:
       temp = rk[rkIndex + 5]
@@ -746,6 +748,7 @@ proc rijndaelKeySetupEnc(rk: var array[60, uint32], cipherKey: openArray[uint8],
 
   rk[rkIndex + 6] = loadU32Big(cipherKey[24 .. 27])
   rk[rkIndex + 7] = loadU32Big(cipherKey[28 .. 31])
+  
   if keyBits == 256:
     while true:
       temp = rk[rkIndex + 7]
