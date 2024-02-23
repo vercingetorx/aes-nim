@@ -1086,8 +1086,8 @@ proc rijndaelDecrypt(rk: openArray[uint32], Nr: int, ct: openArray[uint8], pt: v
   pt[15] = uint8(s3        and 0xFF)
 
 
-proc blockInit(state: var BlockState, key: openArray[uint8], keylen: int): int =
-  var Nr = 0
+proc stateInit(state: var BlockState, key: openArray[uint8], keylen: int): int =
+  var Nr: int
 
   case keylen
   of 16:
