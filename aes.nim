@@ -471,7 +471,7 @@ proc newAesEcbCtx*(key: openArray[byte]): aesEcbCtx =
     raise newException(ValueError, "Key must be 16/24/32 bytes long")
   result.key = toSeq(key)
 
-  discard blockInit(result.state, result.key, result.key.len)
+  discard stateInit(result.state, result.key, result.key.len)
 
 
 proc newAesEcbCtx*(key: string): aesEcbCtx =
@@ -487,7 +487,7 @@ proc newAesCbcCtx*(key, iv: openArray[byte]): aesCbcCtx =
   result.iv = toSeq(iv)
   result.initPreviousBlock()
 
-  discard blockInit(result.state, result.key, result.key.len)
+  discard stateInit(result.state, result.key, result.key.len)
 
 
 proc newAesCbcCtx*(key, iv: string): aesCbcCtx =
@@ -508,7 +508,7 @@ proc newAesCtrCtx*(key, nonce: openArray[byte], initState: openArray[byte]=newSe
     result.initState[i] = b
   result.initCounter()
 
-  discard blockInit(result.state, result.key, result.key.len)
+  discard stateInit(result.state, result.key, result.key.len)
 
 
 proc newAesCtrCtx*(key, nonce: string, initState: int = 0): aesCtrctx =
