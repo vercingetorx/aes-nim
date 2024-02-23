@@ -1,5 +1,5 @@
 import std/[sequtils, strutils]
-
+include rijndael
 #[
   key sizes (int bytes -> bits):
     16 -> 128bit
@@ -12,19 +12,21 @@ const blocksize = 16
 type
   aesEcbCtx* = object # Electronic CodeBook
     key:            seq[byte]
+    state:          BlockState
   aesCbcCtx* = object # Ciphertext Block Chaining
     key:            seq[byte]
     iv:             seq[byte]
+    state:          BlockState
     previousBlock:  array[blocksize, byte]
     isEncryptState: bool
   aesCtrCtx* = object # Counter
     key:            seq[byte]
     nonce:          seq[byte]
+    state:          BlockState
     initState:      array[8, byte]
     counter:        array[blocksize, byte]
     isEncryptState: bool
 
-include rijndael
 
 #################################################################################
 
@@ -91,7 +93,7 @@ proc initPreviousBlock(ctx: var aesCbcCtx) =
     ctx.previousBlock[i] = b
 
 
-proc initCounter(ctx: var aesCtrCtx) =
+proc initCounter*(ctx: var aesCtrCtx) =
   ## initialize counter with IV
   for i, b in ctx.nonce:
     ctx.counter[i] = b
@@ -144,13 +146,11 @@ proc encrypt*(ctx: aesEcbCtx, input: openArray[byte], output: var openArray[byte
     raise newException(ValueError, "input length must be a multiple of 16")
   if input.len > output.len:
     raise newException(ValueError, "output length must be >= input length")
-  var state: BlockState
+
   var blk: array[blocksize, byte]
-    
-  discard blockInit(state, ctx.key, ctx.key.len)
 
   for i in countup(0, input.len - 1, step=blocksize):
-    rijndaelEncrypt(state.ek, state.rounds, input[i ..< i + blocksize], blk)
+    rijndaelEncrypt(ctx.state.ek, ctx.state.rounds, input[i ..< i + blocksize], blk)
     for j, b in blk:
       output[i + j] = b
 
@@ -160,14 +160,12 @@ proc encrypt*(ctx: aesEcbCtx, input: openArray[byte]): seq[byte] =
   ## returns ciphertext as new sequence
   if input.len mod blocksize != 0:
     raise newException(ValueError, "input length must be a multiple of 16")
-  var state: BlockState
+
   var blk: array[blocksize, byte]
   result = newSeq[byte](input.len)
-    
-  discard blockInit(state, ctx.key, ctx.key.len)
 
   for i in countup(0, input.len - 1, step=blocksize):
-    rijndaelEncrypt(state.ek, state.rounds, input[i ..< i + blocksize], blk)
+    rijndaelEncrypt(ctx.state.ek, ctx.state.rounds, input[i ..< i + blocksize], blk)
     for j, b in blk:
       result[i + j] = b
 
@@ -193,14 +191,11 @@ proc decrypt*(ctx: aesEcbCtx, input: openArray[byte], output: var openArray[byte
     raise newException(ValueError, "input length must be a multiple of 16")
   if input.len > output.len:
     raise newException(ValueError, "output length must be >= input length")
-  
-  var state: BlockState
+
   var blk: array[blocksize, byte]
-    
-  discard blockInit(state, ctx.key, ctx.key.len)
 
   for i in countup(0, input.len.pred, step=blocksize):
-    rijndaelDecrypt(state.dk, state.rounds, input, blk)
+    rijndaelDecrypt(ctx.state.dk, ctx.state.rounds, input, blk)
     for j, b in blk:
       output[i + j] = b
 
@@ -210,15 +205,12 @@ proc decrypt*(ctx: aesEcbCtx, input: openArray[byte]): seq[byte] =
   ## returns ciphertext as new sequence
   if input.len mod blocksize != 0:
     raise newException(ValueError, "input length must be a multiple of 16")
-  
-  var state: BlockState
+
   var blk: array[blocksize, byte]
   result = newSeq[byte](input.len)
-    
-  discard blockInit(state, ctx.key, ctx.key.len)
 
   for i in countup(0, input.len.pred, step=blocksize):
-    rijndaelDecrypt(state.dk, state.rounds, input[i ..< i + blocksize], blk)
+    rijndaelDecrypt(ctx.state.dk, ctx.state.rounds, input[i ..< i + blocksize], blk)
     for j, b in blk:
       result[i + j] = b
 
@@ -247,19 +239,17 @@ proc encrypt*(ctx: var aesCbcCtx, input: openArray[byte], output: var openArray[
     raise newException(ValueError, "input length must be a multiple of 16")
   if input.len > output.len:
     raise newException(ValueError, "output length must be >= input length")
-  
-  var state: BlockState
+
   var blk: array[blocksize, byte]
 
   if not ctx.isEncryptState:
     ctx.initPreviousBlock()
     ctx.isEncryptState = true
-  
-  discard blockInit(state, ctx.key, ctx.key.len)
+
 
   for i in countup(0, input.high, step=blocksize):
     # XOR with previous ciphertext block (or IV)
-    rijndaelEncrypt(state.ek, state.rounds, xorBlocks(input[i ..< i + blocksize], ctx.previousBlock), blk)
+    rijndaelEncrypt(ctx.state.ek, ctx.state.rounds, xorBlocks(input[i ..< i + blocksize], ctx.previousBlock), blk)
     for j, b in blk:
       output[i + j] = b
     ctx.previousBlock = blk
@@ -270,20 +260,17 @@ proc encrypt*(ctx: var aesCbcCtx, input: openArray[byte]): seq[byte] =
   ## returns ciphertext as new sequence
   if input.len mod blocksize != 0:
     raise newException(ValueError, "input length must be a multiple of 16")
-  
-  var state: BlockState
+
   var blk: array[blocksize, byte]
   result = newSeq[byte](input.len)
 
   if not ctx.isEncryptState:
     ctx.initPreviousBlock()
     ctx.isEncryptState = true
-  
-  discard blockInit(state, ctx.key, ctx.key.len)
 
   for i in countup(0, input.high, step=blocksize):
     # XOR with previous ciphertext block (or IV)
-    rijndaelEncrypt(state.ek, state.rounds, xorBlocks(input[i ..< i + blocksize], ctx.previousBlock), blk)
+    rijndaelEncrypt(ctx.state.ek, ctx.state.rounds, xorBlocks(input[i ..< i + blocksize], ctx.previousBlock), blk)
     for j, b in blk:
       result[i + j] = b
     ctx.previousBlock = blk
@@ -311,7 +298,6 @@ proc decrypt*(ctx: var aesCbcCtx, input: openArray[byte], output: var openArray[
   if input.len > output.len:
     raise newException(ValueError, "output length must be >= input length")
 
-  var state: BlockState
   var ptBlk: array[blocksize, byte]
   var ctBlk: array[blocksize, byte]
 
@@ -319,12 +305,10 @@ proc decrypt*(ctx: var aesCbcCtx, input: openArray[byte], output: var openArray[
     ctx.initPreviousBlock()
     ctx.isEncryptState = false
 
-  discard blockInit(state, ctx.key, ctx.key.len)
-
   for i in countup(0, input.high, step=blocksize):
     for i, b in input[i ..< i + blocksize]:
       ptBlk[i] = b
-    rijndaelDecrypt(state.dk, state.rounds, ptBlk, ctBlk)
+    rijndaelDecrypt(ctx.state.dk, ctx.state.rounds, ptBlk, ctBlk)
     # XOR with previous ciphertext block (or IV for the first block)
     xorBlocks(ctBlk, ctx.previousBlock)
     for j, b in ctBlk:
@@ -339,7 +323,6 @@ proc decrypt*(ctx: var aesCbcCtx, input: openArray[byte]): seq[byte] =
   if input.len mod blocksize != 0:
     raise newException(ValueError, "input length must be a multiple of 16")
 
-  var state: BlockState
   var ptBlk: array[blocksize, byte]
   var ctBlk: array[blocksize, byte]
   result = newSeq[byte](input.len)
@@ -348,12 +331,10 @@ proc decrypt*(ctx: var aesCbcCtx, input: openArray[byte]): seq[byte] =
     ctx.initPreviousBlock()
     ctx.isEncryptState = false
 
-  discard blockInit(state, ctx.key, ctx.key.len)
-
   for i in countup(0, input.high, step=blocksize):
     for i, b in input[i ..< i + blocksize]:
       ptBlk[i] = b
-    rijndaelDecrypt(state.dk, state.rounds, ptBlk, ctBlk)
+    rijndaelDecrypt(ctx.state.dk, ctx.state.rounds, ptBlk, ctBlk)
     # XOR with previous ciphertext block (or IV for the first block)
     xorBlocks(ctBlk, ctx.previousBlock)
     for j, b in ctBlk:
@@ -383,15 +364,12 @@ proc crypt*(ctx: var aesCtrCtx, input: openArray[byte], output: var openArray[by
   ## crypt in place
   if input.len > output.len:
     raise newException(ValueError, "output length must be >= input length")
-  
-  var state: BlockState
-  var blk: array[blocksize, byte]
 
-  discard blockInit(state, ctx.key, ctx.key.len)
+  var blk: array[blocksize, byte]
 
   for i in countup(0, input.high, step=blocksize):
     # Encrypt the counter
-    rijndaelEncrypt(state.ek, state.rounds, ctx.counter, blk)
+    rijndaelEncrypt(ctx.state.ek, ctx.state.rounds, ctx.counter, blk)
     ctx.incrementCounter()
     # XOR the encrypted counter with the block
     for j, b in xorBlocksSeq(input[i ..< min(i + blocksize, input.len)], blk):
@@ -401,15 +379,12 @@ proc crypt*(ctx: var aesCtrCtx, input: openArray[byte], output: var openArray[by
 proc crypt*(ctx: var aesCtrCtx, input: openArray[byte]): seq[byte] =
   ## CTR Mode
   ## returns result as new sequence
-  var state: BlockState
   var blk: array[blocksize, byte]
   result = newSeq[byte](input.len)
 
-  discard blockInit(state, ctx.key, ctx.key.len)
-
   for i in countup(0, input.high, step=blocksize):
     # Encrypt the counter
-    rijndaelEncrypt(state.ek, state.rounds, ctx.counter, blk)
+    rijndaelEncrypt(ctx.state.ek, ctx.state.rounds, ctx.counter, blk)
     ctx.incrementCounter()
     # XOR the encrypted counter with the block
     for j, b in xorBlocksSeq(input[i ..< min(i + blocksize, input.len)], blk):
@@ -496,6 +471,8 @@ proc newAesEcbCtx*(key: openArray[byte]): aesEcbCtx =
     raise newException(ValueError, "Key must be 16/24/32 bytes long")
   result.key = toSeq(key)
 
+  discard blockInit(result.state, result.key, result.key.len)
+
 
 proc newAesEcbCtx*(key: string): aesEcbCtx =
   return newAesEcbCtx(key.encodeBytes())
@@ -509,6 +486,8 @@ proc newAesCbcCtx*(key, iv: openArray[byte]): aesCbcCtx =
   result.key = toSeq(key)
   result.iv = toSeq(iv)
   result.initPreviousBlock()
+
+  discard blockInit(result.state, result.key, result.key.len)
 
 
 proc newAesCbcCtx*(key, iv: string): aesCbcCtx =
@@ -528,6 +507,8 @@ proc newAesCtrCtx*(key, nonce: openArray[byte], initState: openArray[byte]=newSe
   for i, b in initState:
     result.initState[i] = b
   result.initCounter()
+
+  discard blockInit(result.state, result.key, result.key.len)
 
 
 proc newAesCtrCtx*(key, nonce: string, initState: int = 0): aesCtrctx =
